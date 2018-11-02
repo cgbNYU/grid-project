@@ -1,0 +1,58 @@
+Make every object have a time to launch that begins calculating after the previous obstacles launch, so that changes in earlier
+obstacles don't require me to go back to every later object and change them.
+
+So:
+public float launchTime;
+
+We need some kind of central file to hold the whole level so that I don't have to skip around to a bunch of objects to change timings
+
+Text:
+If I want to use text, I should make the text data hold an object name for Unity to pull from prefabs, a launchTime to determine
+how long to wait after the previous obstacle, and an order, so that it knows which objects to wait for, and a position. 
+
+How could I do the order?
+If each obstacles/group of obstacles has an identifying number, adding or removing obstacles will be a pain in the ass.
+Maybe each obstacles just adds to a central variable, and the next obstacle is just checking that variable to see when it goes? 
+Or each obstacle has a time value that is triggered when it is greater than the sum of all the time values before it plus itself.
+
+{
+float timeAdd = x;
+float launchTime = timeAdd + the launchTime of all previous obstacles;
+
+float timer;
+
+if (timer >= launchTime)
+{
+	do the obstacle thing;
+}
+}
+
+So the text should hold the obstacle name, a timeAdd value, and a position.
+When the obstacle is read by the code, the code should automatically calculate the launchTime for a given obstacle and then start activating
+obstacles as it goes. I might need a data structure within my code to hold all of the obstacles and their launch times as they come in.
+Once the text is read, it can place the obstacle at its position, but then it has to calculate the launchTime and hold onto that info for
+every object so it can call their action when their time happens. So it needs to store an obstacle name and a launchTime.
+
+OR I could just have it place these obstacles in position when the text is read, and THEY get their timer set based on the order. That way
+I don't have to store shit, because each obstacle will have its own info already. Position and timer will be set. Boom. Roasted. Destroyed.
+I win.
+
+Script:
+If I just want a controller script, it needs to have all that stuff the text file holds, plus some way to hold all of the obstacles
+in a single inspector location. I could use an array of obstacles to store all that info, but I am not sure what that would look like
+in the inspector.
+
+Editor:
+Is there a way to do all my level creation in the editor? Eh. Probably too much work.
+
+
+
+Don't need a general timer. Just instantiate the obstacles after the previous obstacle.
+Figure out a randomization strategy
+	slightly random times
+	random objects
+This structure will be hard to randomize with
+
+time position name
+
+GRFON
