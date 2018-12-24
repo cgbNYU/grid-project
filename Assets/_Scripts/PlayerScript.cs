@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 
 public class PlayerScript : MonoBehaviour {
@@ -19,6 +20,7 @@ public class PlayerScript : MonoBehaviour {
 
     //Movement Variables
     public float rayLength; //Determines how long the movement raycasts the player uses are
+    public float moveSpeed; //How fast the player snaps into position
 
     //Button press variables
     public bool buttonPressedV; //used to determine if a button has been pressed. Must be false before another button can be pressed
@@ -30,19 +32,26 @@ public class PlayerScript : MonoBehaviour {
     public GameControllerScript gcScript;
 
     //Spawning
-    public bool spawning;
+    public bool spawning = false;
     public GameObject playerSpawn;
 
     //Defeat
     public bool defeated;
+    
+    //Squash and Stretch Variables
+    public Vector3 moveSquash;
+    public float moveSquashSpeed;
+    public Vector3 stopSquash;
+    public float stopSquashSpeed;
+    public Vector3 defaultScale;
+    public float resetSpeed;
 
 	// Use this for initialization
 	void Start ()
     {
         buttonPressedV = false;
         buttonPressedH = false;
-
-        gcScript = GameObject.Find("GameController").GetComponent<GameControllerScript>();
+        //gcScript = GameObject.Find("GameController").GetComponent<GameControllerScript>();
 
         defeated = false;
 	}
@@ -60,7 +69,7 @@ public class PlayerScript : MonoBehaviour {
     {
         if (!defeated && !spawning)
         {
-            if (Input.GetAxisRaw("Vertical") > 0 && !buttonPressedV)
+            if (Input.GetAxisRaw("Vertical") > 0 && !buttonPressedV || Input.GetKeyDown(KeyCode.W))
             {
                 buttonPressedV = true;
                 RaycastHit hit;
@@ -101,7 +110,8 @@ public class PlayerScript : MonoBehaviour {
                 bool nodeCast = Physics.Raycast(transform.position, transform.right, out hit, rayLength, 1 << LayerMask.NameToLayer("Node"));
                 if (nodeCast)
                 {
-                    transform.position = hit.transform.position;
+                    Vector3 hitPosition = hit.transform.position;
+                    MoveTween(hitPosition);
                 }
 
             }
@@ -130,6 +140,27 @@ public class PlayerScript : MonoBehaviour {
                 print("Game Over");
             }
         }
+    }
+    
+    //MoveTween
+    //When the player moves, tween to the node and squash and stretch
+    public void MoveTween(Vector3 hitPosition)
+    {
+        //Create sequence for movement animation
+        Sequence moveSequence = DOTween.Sequence();
+       
+        //Movement
+        moveSequence.Append(DOTween.To(() => gameObject.transform.position, x => gameObject.transform.position = x, hitPosition, moveSpeed));
+        
+        //Squash and stretch during movement
+        moveSequence.Join(transform.DOScale(moveSquash, moveSquashSpeed));
+
+        //Squash and stretch at the end of movement
+        //I'm going to need to make this play slightly before the movement ends. Need to time it out somehow. Make a variable with an equation
+        moveSequence.Append(transform.DOScale(stopSquash, stopSquashSpeed));
+        
+        //Reset
+        moveSequence.Append(transform.DOScale(defaultScale, resetSpeed));
     }
 
     //ButtonRelease
