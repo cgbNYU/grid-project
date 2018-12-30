@@ -39,12 +39,13 @@ public class PlayerScript : MonoBehaviour {
     public bool defeated;
     
     //Squash and Stretch Variables
+    //Private variables Set in SetVariables
     public Vector3 moveSquash;
-    public float moveSquashSpeed;
+    private float moveSquashSpeed;
     public Vector3 stopSquash;
-    public float stopSquashSpeed;
-    public Vector3 defaultScale;
-    public float resetSpeed;
+    private float stopSquashSpeed;
+    private Vector3 defaultScale;
+    private float resetSpeed;
 
 	// Use this for initialization
 	void Start ()
@@ -63,6 +64,14 @@ public class PlayerScript : MonoBehaviour {
 
         ButtonRelease();
 	}
+    
+    //SetVariables
+    //Uses the moveSpeed variable to determine the speed for the other parts of the animation
+    public void SetVariables()
+    {
+        defaultScale = transform.localScale;
+        
+    }
 
     //PlayerMove
     public void PlayerMove()
@@ -76,8 +85,8 @@ public class PlayerScript : MonoBehaviour {
                 bool nodeCast = Physics.Raycast(transform.position, transform.up, out hit, rayLength, 1 << LayerMask.NameToLayer("Node"));
                 if (nodeCast)
                 {
-                    print(nodeCast.ToString());
-                    transform.position = hit.transform.position;
+                    Vector3 hitPosition = hit.transform.position;
+                    MoveTween(hitPosition);
                 }
 
             }
@@ -88,9 +97,9 @@ public class PlayerScript : MonoBehaviour {
                 bool nodeCast = Physics.Raycast(transform.position, -transform.up, out hit, rayLength, 1 << LayerMask.NameToLayer("Node"));
                 if (nodeCast)
                 {
-                    transform.position = hit.transform.position;
+                    Vector3 hitPosition = hit.transform.position;
+                    MoveTween(hitPosition);
                 }
-
             }
             else if (Input.GetAxisRaw("Horizontal") < 0 && !buttonPressedH)
             {
@@ -99,9 +108,9 @@ public class PlayerScript : MonoBehaviour {
                 bool nodeCast = Physics.Raycast(transform.position, -transform.right, out hit, rayLength, 1 << LayerMask.NameToLayer("Node"));
                 if (nodeCast)
                 {
-                    transform.position = hit.transform.position;
+                    Vector3 hitPosition = hit.transform.position;
+                    MoveTween(hitPosition);
                 }
-
             }
             else if (Input.GetAxisRaw("Horizontal") > 0 && !buttonPressedH)
             {
@@ -113,7 +122,6 @@ public class PlayerScript : MonoBehaviour {
                     Vector3 hitPosition = hit.transform.position;
                     MoveTween(hitPosition);
                 }
-
             }
         }
         else if (spawning)
@@ -150,17 +158,20 @@ public class PlayerScript : MonoBehaviour {
         Sequence moveSequence = DOTween.Sequence();
        
         //Movement
-        moveSequence.Append(DOTween.To(() => gameObject.transform.position, x => gameObject.transform.position = x, hitPosition, moveSpeed));
+        Tweener moveTween = DOTween.To(() => gameObject.transform.position, x => gameObject.transform.position = x,
+            hitPosition, moveSpeed);
+        moveTween.SetEase(Ease.OutBack);
+        moveSequence.Append(moveTween);
         
         //Squash and stretch during movement
-        moveSequence.Join(transform.DOScale(moveSquash, moveSquashSpeed));
+        //moveSequence.Join(transform.DOScale(moveSquash, moveSquashSpeed));
 
         //Squash and stretch at the end of movement
         //I'm going to need to make this play slightly before the movement ends. Need to time it out somehow. Make a variable with an equation
-        moveSequence.Append(transform.DOScale(stopSquash, stopSquashSpeed));
+        //moveSequence.Append(transform.DOScale(stopSquash, stopSquashSpeed));
         
         //Reset
-        moveSequence.Append(transform.DOScale(defaultScale, resetSpeed));
+        //moveSequence.Append(transform.DOScale(defaultScale, resetSpeed));
     }
 
     //ButtonRelease
