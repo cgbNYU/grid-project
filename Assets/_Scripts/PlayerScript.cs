@@ -51,8 +51,6 @@ public class PlayerScript : MonoBehaviour {
 	void Start ()
     {
         buttonPressedV = false;
-        buttonPressedH = false;
-        //gcScript = GameObject.Find("GameController").GetComponent<GameControllerScript>();
 
         defeated = false;
 	}
