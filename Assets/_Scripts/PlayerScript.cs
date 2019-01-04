@@ -51,6 +51,7 @@ public class PlayerScript : MonoBehaviour {
 	void Start ()
     {
         buttonPressedV = false;
+        buttonPressedH = false;
 
         defeated = false;
 	}
