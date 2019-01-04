@@ -21,6 +21,7 @@ public class PlayerScript : MonoBehaviour {
     //Movement Variables
     public float rayLength; //Determines how long the movement raycasts the player uses are
     public float moveSpeed; //How fast the player snaps into position
+    public float cantMoveDistance; //how far the player moves wen it can't move
 
     //Button press variables
     public bool buttonPressedV; //used to determine if a button has been pressed. Must be false before another button can be pressed
@@ -77,7 +78,7 @@ public class PlayerScript : MonoBehaviour {
     {
         if (!defeated && !spawning)
         {
-            if (Input.GetAxisRaw("Vertical") > 0 && !buttonPressedV || Input.GetKeyDown(KeyCode.W))
+            if (Input.GetAxisRaw("Vertical") > 0 && !buttonPressedV || Input.GetKeyDown(KeyCode.W)) //Up
             {
                 buttonPressedV = true;
                 RaycastHit hit;
@@ -87,9 +88,13 @@ public class PlayerScript : MonoBehaviour {
                     Vector3 hitPosition = hit.transform.position;
                     MoveTween(hitPosition);
                 }
-
+                else if (!nodeCast)
+                {
+                    Vector3 hitPosition = new Vector3(0, cantMoveDistance, 0);
+                    CantMoveTween(hitPosition);
+                }
             }
-            else if (Input.GetAxisRaw("Vertical") < 0 && !buttonPressedV)
+            else if (Input.GetAxisRaw("Vertical") < 0 && !buttonPressedV) //Down
             {
                 buttonPressedV = true;
                 RaycastHit hit;
@@ -99,8 +104,13 @@ public class PlayerScript : MonoBehaviour {
                     Vector3 hitPosition = hit.transform.position;
                     MoveTween(hitPosition);
                 }
+                else if (!nodeCast)
+                {
+                    Vector3 hitPosition = new Vector3(0, -cantMoveDistance, 0);
+                    CantMoveTween(hitPosition);
+                }
             }
-            else if (Input.GetAxisRaw("Horizontal") < 0 && !buttonPressedH)
+            else if (Input.GetAxisRaw("Horizontal") < 0 && !buttonPressedH) //Left
             {
                 buttonPressedH = true;
                 RaycastHit hit;
@@ -110,8 +120,13 @@ public class PlayerScript : MonoBehaviour {
                     Vector3 hitPosition = hit.transform.position;
                     MoveTween(hitPosition);
                 }
+                else if (!nodeCast)
+                {
+                    Vector3 hitPosition = new Vector3(-cantMoveDistance, 0, 0);
+                    CantMoveTween(hitPosition);
+                }
             }
-            else if (Input.GetAxisRaw("Horizontal") > 0 && !buttonPressedH)
+            else if (Input.GetAxisRaw("Horizontal") > 0 && !buttonPressedH) //Right
             {
                 buttonPressedH = true;
                 RaycastHit hit;
@@ -120,6 +135,11 @@ public class PlayerScript : MonoBehaviour {
                 {
                     Vector3 hitPosition = hit.transform.position;
                     MoveTween(hitPosition);
+                }
+                else if (!nodeCast)
+                {
+                    Vector3 hitPosition = new Vector3(cantMoveDistance, 0, 0);
+                    CantMoveTween(hitPosition);
                 }
             }
         }
@@ -171,6 +191,11 @@ public class PlayerScript : MonoBehaviour {
         
         //Reset
         //moveSequence.Append(transform.DOScale(defaultScale, resetSpeed));
+    }
+
+    public void CantMoveTween(Vector3 hitPosition)
+    {
+        transform.DOPunchPosition(hitPosition, moveSpeed, 10, 0);
     }
 
     //ButtonRelease
