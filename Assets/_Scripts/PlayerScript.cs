@@ -22,6 +22,8 @@ public class PlayerScript : MonoBehaviour {
     public float rayLength; //Determines how long the movement raycasts the player uses are
     public float moveSpeed; //How fast the player snaps into position
     public float cantMoveDistance; //how far the player moves wen it can't move
+    private bool isMoving = false; //whether player is moving or not
+    
 
     //Button press variables
     public bool buttonPressedV; //used to determine if a button has been pressed. Must be false before another button can be pressed
@@ -70,7 +72,6 @@ public class PlayerScript : MonoBehaviour {
     public void SetVariables()
     {
         defaultScale = transform.localScale;
-        
     }
 
     //PlayerMove
@@ -78,7 +79,7 @@ public class PlayerScript : MonoBehaviour {
     {
         if (!defeated && !spawning)
         {
-            if (Input.GetAxisRaw("Vertical") > 0 && !buttonPressedV || Input.GetKeyDown(KeyCode.W)) //Up
+            if (Input.GetAxisRaw("Vertical") > 0 && !buttonPressedV && !isMoving) //Up
             {
                 buttonPressedV = true;
                 RaycastHit hit;
@@ -94,7 +95,7 @@ public class PlayerScript : MonoBehaviour {
                     CantMoveTween(hitPosition);
                 }
             }
-            else if (Input.GetAxisRaw("Vertical") < 0 && !buttonPressedV) //Down
+            else if (Input.GetAxisRaw("Vertical") < 0 && !buttonPressedV && !isMoving) //Down
             {
                 buttonPressedV = true;
                 RaycastHit hit;
@@ -110,7 +111,7 @@ public class PlayerScript : MonoBehaviour {
                     CantMoveTween(hitPosition);
                 }
             }
-            else if (Input.GetAxisRaw("Horizontal") < 0 && !buttonPressedH) //Left
+            else if (Input.GetAxisRaw("Horizontal") < 0 && !buttonPressedH && !isMoving) //Left
             {
                 buttonPressedH = true;
                 RaycastHit hit;
@@ -126,7 +127,7 @@ public class PlayerScript : MonoBehaviour {
                     CantMoveTween(hitPosition);
                 }
             }
-            else if (Input.GetAxisRaw("Horizontal") > 0 && !buttonPressedH) //Right
+            else if (Input.GetAxisRaw("Horizontal") > 0 && !buttonPressedH && !isMoving) //Right
             {
                 buttonPressedH = true;
                 RaycastHit hit;
@@ -181,21 +182,28 @@ public class PlayerScript : MonoBehaviour {
             hitPosition, moveSpeed);
         moveTween.SetEase(Ease.OutBack);
         moveSequence.Append(moveTween);
-        
+
         //Squash and stretch during movement
         //moveSequence.Join(transform.DOScale(moveSquash, moveSquashSpeed));
 
         //Squash and stretch at the end of movement
         //I'm going to need to make this play slightly before the movement ends. Need to time it out somehow. Make a variable with an equation
         //moveSequence.Append(transform.DOScale(stopSquash, stopSquashSpeed));
-        
+
         //Reset
         //moveSequence.Append(transform.DOScale(defaultScale, resetSpeed));
     }
 
+    IEnumerator ResetIsMoving()
+    {
+        
+        yield return null;
+    }
+
     public void CantMoveTween(Vector3 hitPosition)
     {
-        transform.DOPunchPosition(hitPosition, moveSpeed, 10, 0);
+        Tweener moveTween = transform.DOPunchPosition(hitPosition, moveSpeed, 10, 0);
+        moveTween.Play();
     }
 
     //ButtonRelease
