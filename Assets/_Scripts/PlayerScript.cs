@@ -22,7 +22,8 @@ public class PlayerScript : MonoBehaviour {
     public float rayLength; //Determines how long the movement raycasts the player uses are
     public float moveSpeed; //How fast the player snaps into position
     public float cantMoveDistance; //how far the player moves wen it can't move
-    private bool isMoving = false; //whether player is moving or not
+    public bool isMoving = false; //whether player is moving or not
+    private float moveTimer = 0;
     
 
     //Button press variables
@@ -87,12 +88,12 @@ public class PlayerScript : MonoBehaviour {
                 if (nodeCast)
                 {
                     Vector3 hitPosition = hit.transform.position;
-                    MoveTween(hitPosition);
+                    StartCoroutine(MoveTween(hitPosition));
                 }
                 else if (!nodeCast)
                 {
                     Vector3 hitPosition = new Vector3(0, cantMoveDistance, 0);
-                    CantMoveTween(hitPosition);
+                    StartCoroutine(CantMoveTween(hitPosition));
                 }
             }
             else if (Input.GetAxisRaw("Vertical") < 0 && !buttonPressedV && !isMoving) //Down
@@ -103,12 +104,12 @@ public class PlayerScript : MonoBehaviour {
                 if (nodeCast)
                 {
                     Vector3 hitPosition = hit.transform.position;
-                    MoveTween(hitPosition);
+                    StartCoroutine(MoveTween(hitPosition));
                 }
                 else if (!nodeCast)
                 {
                     Vector3 hitPosition = new Vector3(0, -cantMoveDistance, 0);
-                    CantMoveTween(hitPosition);
+                    StartCoroutine(CantMoveTween(hitPosition));
                 }
             }
             else if (Input.GetAxisRaw("Horizontal") < 0 && !buttonPressedH && !isMoving) //Left
@@ -119,12 +120,12 @@ public class PlayerScript : MonoBehaviour {
                 if (nodeCast)
                 {
                     Vector3 hitPosition = hit.transform.position;
-                    MoveTween(hitPosition);
+                    StartCoroutine(MoveTween(hitPosition));
                 }
                 else if (!nodeCast)
                 {
                     Vector3 hitPosition = new Vector3(-cantMoveDistance, 0, 0);
-                    CantMoveTween(hitPosition);
+                    StartCoroutine(CantMoveTween(hitPosition));
                 }
             }
             else if (Input.GetAxisRaw("Horizontal") > 0 && !buttonPressedH && !isMoving) //Right
@@ -135,12 +136,12 @@ public class PlayerScript : MonoBehaviour {
                 if (nodeCast)
                 {
                     Vector3 hitPosition = hit.transform.position;
-                    MoveTween(hitPosition);
+                    StartCoroutine(MoveTween(hitPosition));
                 }
                 else if (!nodeCast)
                 {
                     Vector3 hitPosition = new Vector3(cantMoveDistance, 0, 0);
-                    CantMoveTween(hitPosition);
+                    StartCoroutine(CantMoveTween(hitPosition));
                 }
             }
         }
@@ -172,8 +173,9 @@ public class PlayerScript : MonoBehaviour {
     
     //MoveTween
     //When the player moves, tween to the node and squash and stretch
-    public void MoveTween(Vector3 hitPosition)
+    IEnumerator MoveTween(Vector3 hitPosition)
     {
+        isMoving = true;
         //Create sequence for movement animation
         Sequence moveSequence = DOTween.Sequence();
        
@@ -182,6 +184,10 @@ public class PlayerScript : MonoBehaviour {
             hitPosition, moveSpeed);
         moveTween.SetEase(Ease.OutBack);
         moveSequence.Append(moveTween);
+
+        yield return moveSequence.WaitForCompletion(); //wait until the character has moved
+
+        isMoving = false;
 
         //Squash and stretch during movement
         //moveSequence.Join(transform.DOScale(moveSquash, moveSquashSpeed));
@@ -196,14 +202,29 @@ public class PlayerScript : MonoBehaviour {
 
     IEnumerator ResetIsMoving()
     {
-        
-        yield return null;
+        while (moveTimer < moveSpeed)
+        {
+            moveTimer += Time.deltaTime;
+            if (moveTimer <= moveSpeed)
+            {
+                moveTimer = 0;
+                isMoving = false;
+                StopCoroutine(ResetIsMoving());
+            }
+            Debug.Log("moveTimer = " + moveTimer);
+            yield return null;
+        }
     }
 
-    public void CantMoveTween(Vector3 hitPosition)
+    IEnumerator CantMoveTween(Vector3 hitPosition)
     {
+        isMoving = true;
         Tweener moveTween = transform.DOPunchPosition(hitPosition, moveSpeed, 10, 0);
         moveTween.Play();
+
+        yield return moveTween.WaitForCompletion(); //wait until the character has moved
+
+        isMoving = false;
     }
 
     //ButtonRelease
