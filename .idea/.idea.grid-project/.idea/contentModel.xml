@@ -10,6 +10,7 @@
           <e p="GameControllerScript.cs" t="Include" />
           <e p="PlayerScript.cs" t="Include" />
           <e p="SliceObstacleScript.cs" t="Include" />
+          <e p="SlideObScript.cs" t="Include" />
           <e p="SpinnerObstacleScript.cs" t="Include" />
         </e>
         <e p="Demigiant" t="Include">
